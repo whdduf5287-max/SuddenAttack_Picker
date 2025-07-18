@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>서든어택 제비뽑기 - 옵션 포함</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 30px;
+    }
+    .section {
+      margin-top: 20px;
+    }
+    .options, .weapon-options {
+      margin: 10px 0;
+    }
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 5px;
+      margin: 10px 0;
+      text-align: left;
+    }
+    button {
+      font-size: 16px;
+      padding: 8px 16px;
+      margin: 10px;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 30px;
+      background-color: #2c2c2c;
+      border-radius: 10px;
+      padding: 20px;
+    }
+    details {
+      margin-top: 20px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔫 서든어택 장비 제비뽑기 🔫</h1>
+
+  <div class="options section">
+    <label><input type="checkbox" id="main" checked> 주무기</label>
+    <label><input type="checkbox" id="sub" checked> 보조무기</label>
+    <label><input type="checkbox" id="melee" checked> 근접무기</label>
+    <label><input type="checkbox" id="throwable" checked> 투척무기</label>
+    <label><input type="checkbox" id="character" checked> 캐릭터</label>
+    <label><input type="checkbox" id="crosshair" checked> 크로스헤어</label>
+  </div>
+
+  <details>
+    <summary style="cursor:pointer;">⚙ 옵션 열기 / 닫기</summary>
+
+    <!-- 무기 옵션 섹션 -->
+    <div class="weapon-options section">
+      <h3>🔧 주무기 선택</h3>
+      <button onclick="toggleAll('mainWeapons', true)">전체 선택</button>
+      <button onclick="toggleAll('mainWeapons', false)">전체 해제</button>
+      <div class="checkbox-grid" id="mainWeapons"></div>
+
+      <h3>🔧 보조무기 선택</h3>
+      <button onclick="toggleAll('subWeapons', true)">전체 선택</button>
+      <button onclick="toggleAll('subWeapons', false)">전체 해제</button>
+      <div class="checkbox-grid" id="subWeapons"></div>
+
+      <h3>🔧 근접무기 선택</h3>
+      <button onclick="toggleAll('meleeWeapons', true)">전체 선택</button>
+      <button onclick="toggleAll('meleeWeapons', false)">전체 해제</button>
+      <div class="checkbox-grid" id="meleeWeapons"></div>
+
+      <h3>🔧 투척무기 선택</h3>
+      <button onclick="toggleAll('throwables', true)">전체 선택</button>
+      <button onclick="toggleAll('throwables', false)">전체 해제</button>
+      <div class="checkbox-grid" id="throwables"></div>
+    </div>
+  </details>
+
+  <button onclick="generateSetup()">🎲 뽑기!</button>
+
+  <div class="result" id="resultBox" style="display:none;">
+    <h2>🎮 뽑힌 결과 🎮</h2>
+    <div id="results"></div>
+  </div>
+
+  <script>
+    const data = {
+      mainWeapons: [
+        "TRG21", "윈체스터", "Scout SR_69", "GSR-6", "Dragunov", "컴뱃보우(활)", "M16",
+        "SMG U101", "Winchester 1880", "AK47", "AK-47 Heavy", "AK-47 Light", "AK-47 Normal",
+        "AK-103", "ANR", "SIG556", "SCAR_V2", "XM68", "FAMAS F1", "NA-34", "UAR_V2", "HK416_V2",
+        "M4A1", "K2", "CM901", "DRT-6", "KSG-12", "M249", "SG-12", "MAK-11", "KRISS", "MP-X3",
+        "Aks-74U", "K1", "DSG-12", "SG-870_V2", "CZS-3", "P90_V2", "MP7", "M134", "MP5"
+      ],
+      subWeapons: [
+        "C.USP", "G18", "D.eagle", "C.anaconda", "QBD-4", "T.contender", "PNR-10",
+        "DoubleBarrel", "B.92Fs", "B.93R", "VS-9", "TAC-9"
+      ],
+      meleeWeapons: [
+        "Knife", "Gurkha Knife", "AXE Knife", "Tiger Stripe", "전기충격기"
+      ],
+      throwables: [
+        "G400", "G350(유령폭)", "G700", "G600", "Throw Knife(칼폭)",
+        "F401(연막탄)", "S402(섬광탄)", "Black Octopus", "Dynamite", "TG404"
+      ],
+      characters: [
+        "퍼니 자유", "연예인 자유", "베이직(기본캐)", "흑룡"
+      ],
+      crosshairs: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    };
+
+    // 초기 무기 체크박스 생성
+    window.onload = () => {
+      for (const category in data) {
+        const container = document.getElementById(category);
+        if (!container) continue;
+
+        data[category].forEach((item, index) => {
+          const id = `${category}_${index}`;
+          const checkbox = `<label><input type="checkbox" id="${id}" checked> ${item}</label>`;
+          container.innerHTML += checkbox;
+        });
+      }
+    };
+
+    function getChecked(category) {
+      const checked = [];
+      data[category].forEach((_, i) => {
+        const cb = document.getElementById(`${category}_${i}`);
+        if (cb && cb.checked) {
+          checked.push(data[category][i]);
+        }
+      });
+      return checked;
+    }
+
+    function toggleAll(category, state) {
+      data[category].forEach((_, i) => {
+        const cb = document.getElementById(`${category}_${i}`);
+        if (cb) cb.checked = state;
+      });
+    }
+
+    function pickRandom(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function generateSetup() {
+      const results = [];
+
+      if (document.getElementById('main').checked) {
+        const selected = getChecked('mainWeapons');
+        if (selected.length > 0) results.push(`주무기: ${pickRandom(selected)}`);
+        else results.push("주무기: 선택된 무기가 없습니다.");
+      }
+
+      if (document.getElementById('sub').checked) {
+        const selected = getChecked('subWeapons');
+        if (selected.length > 0) results.push(`보조무기: ${pickRandom(selected)}`);
+        else results.push("보조무기: 선택된 무기가 없습니다.");
+      }
+
+      if (document.getElementById('melee').checked) {
+        const selected = getChecked('meleeWeapons');
+        if (selected.length > 0) results.push(`근접무기: ${pickRandom(selected)}`);
+        else results.push("근접무기: 선택된 무기가 없습니다.");
+      }
+
+      if (document.getElementById('throwable').checked) {
+        const selected = getChecked('throwables');
+        if (selected.length > 0) results.push(`투척무기: ${pickRandom(selected)}`);
+        else results.push("투척무기: 선택된 무기가 없습니다.");
+      }
+
+      if (document.getElementById('character').checked) {
+        results.push(`캐릭터: ${pickRandom(data.characters)}`);
+      }
+
+      if (document.getElementById('crosshair').checked) {
+        results.push(`크로스헤어: ${pickRandom(data.crosshairs)}`);
+      }
+
+      const resultBox = document.getElementById('resultBox');
+      const resultsContainer = document.getElementById('results');
+      resultBox.style.display = 'block';
+      resultsContainer.innerHTML = results.map(r => `<p>${r}</p>`).join('');
+    }
+  </script>
+</body>
+</html>
